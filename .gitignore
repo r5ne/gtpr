@@ -1,2 +1,3 @@
 .venv
+.lazy.lua
 **/__pycache__/
