@@ -1,14 +1,16 @@
 from typing import Literal
+import pathlib
 
 import team
 
 
 def make_team() -> team.Team | Literal[False]:
     name = input_quit("name: ")
-    if not name:
+    skill = input_quit("skill: ")
+    if not (name and skill):
         return False
     else:
-        return team.Team(name)
+        return team.Team(name, "good")
 
 
 def input_quit(txt: str) -> str | Literal[False]:
@@ -26,7 +28,7 @@ def main() -> None:
         if not (team := make_team()):
             running = False
         else:
-            print(team)
+            team.mk_new_file(pathlib.Path())
 
 
 if __name__ == "__main__":
