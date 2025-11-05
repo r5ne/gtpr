@@ -5,7 +5,9 @@ description = "genshin team power ranking"
 authors = [{ name = "r5ne" }]
 requires-python = ">=3.14"
 readme = "README.md"
-dependencies = []
+dependencies = [
+    "pydantic>=2.12.3",
+]
 
 [tool.hatch.build.targets.sdist]
 include = ["src/gtpr"]
@@ -26,6 +28,9 @@ dev = [
 ]
 
 [tool.basedpyright]
+executionEnvironments = [
+{ root = "src/gtpr" }
+]
 pythonPlatform = "All"
 reportUnusedImport = false
 

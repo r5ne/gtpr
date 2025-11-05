@@ -1,24 +1,24 @@
-from typing import Literal
 import pathlib
+from typing import Literal
 
 import team
+import data
+
+DEFAULT_PATH = pathlib.Path.cwd() / "teams"
 
 
 def make_team() -> team.Team | Literal[False]:
     name = input_quit("name: ")
-    skill = input_quit("skill: ")
-    if not (name and skill):
+    if not name:
         return False
-    else:
-        return team.Team(name, "good")
+    return team.Team(name=name)
 
 
 def input_quit(txt: str) -> str | Literal[False]:
     output = input(txt)
     if output == "\\q":
         return False
-    else:
-        return output
+    return output
 
 
 def main() -> None:
@@ -27,8 +27,8 @@ def main() -> None:
     while running:
         if not (team := make_team()):
             running = False
-        else:
-            team.mk_new_file(pathlib.Path())
+        elif not data.write_team(team, DEFAULT_PATH / f"{team.name}.json"):
+            print("Team already exists!")
 
 
 if __name__ == "__main__":
