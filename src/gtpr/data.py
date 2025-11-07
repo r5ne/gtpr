@@ -1,8 +1,6 @@
 import json
 from typing import TYPE_CHECKING
 
-import team
-
 if TYPE_CHECKING:
     import pathlib
 
@@ -21,7 +19,6 @@ def write_team(
         json.dump(team.model_dump_json(), jsonfile)
 
 
-def read_team(path: pathlib.Path) -> team.Team:
+def read_team(path: pathlib.Path) -> str:
     with path.open() as jsonfile:
-        jsondata = json.load(jsonfile)
-        return team.Team.model_validate_json(jsondata)
+        return json.load(jsonfile)
