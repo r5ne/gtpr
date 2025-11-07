@@ -32,13 +32,17 @@ executionEnvironments = [
 { root = "src/gtpr" }
 ]
 pythonPlatform = "All"
+# ignored errors
 reportUnusedImport = false
+reportExplicitAny = false
+ reportMissingTypeArgument = false
 
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
     # docstrings
     "D100", "D101", "D203", "D213",
+    # flake8print
     "T201",
     # annotations
     "ANN204",
