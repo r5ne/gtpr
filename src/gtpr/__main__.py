@@ -1,42 +1,54 @@
-import pathlib
 import sys
-from typing import Literal
+from typing import TYPE_CHECKING, Any
 
+import constants
 import data
 import team
 
-TEAM_PATH = pathlib.Path.cwd() / "teams"
-EXIT_VALUE = "\\q"
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 def input_quit(txt: str) -> str:
     output = input(txt)
-    if output == EXIT_VALUE:
+    if output == constants.EXIT_VALUE:
         sys.exit()
+    return output
+
+
+def require_output_in_tuple[T](
+    value: Callable[..., T],
+    required_outputs: tuple[Any, ...],
+    invalid_msg: str,
+) -> T:
+    while (output := value()) not in required_outputs:
+        print(invalid_msg)
     return output
 
 
 def team_factory() -> team.Team:
     name = input_quit("name: ")
-    return team.Team(name=name)
+    skill = require_output_in_tuple(
+        lambda: input_quit("skill: "),
+        constants.SKILL,
+        f"Invalid skill rating, must be part of {constants.SKILL}",
+    )
+    return team.Team(name=name, skill=skill)
 
 
-def get_mode() -> Literal["w", "r"]:
-    while (
-        answer := input_quit('Write or read team? "w" for write and "r" for read.')
-    ) not in (
-        "w",
-        "r",
-    ):
-        print("Invalid mode selected, please try again.")
-    return answer
+def get_mode() -> str:
+    return require_output_in_tuple(
+        lambda: input_quit('Write or read team? "w" for write and "r" for read.'),
+        ("w", "r"),
+        "Invalid mode selected, please try again.",
+    )
 
 
 def make_team() -> None:
     while True:
         new_team = team_factory()
         try:
-            data.write_team(new_team, TEAM_PATH / f"{new_team.name}.json")
+            data.write_team(new_team, constants.TEAM_PATH / f"{new_team.name}.json")
         except FileExistsError:
             print("Team already exists! Try another team name, or read the team.")
         else:
@@ -46,7 +58,7 @@ def make_team() -> None:
 def load_team() -> team.Team:
     while True:
         team_name = input_quit("Enter the name of your team to load: ")
-        team_path = TEAM_PATH / f"{team_name}.json"
+        team_path = constants.TEAM_PATH / f"{team_name}.json"
         try:
             loaded_team = data.read_team(team_path)
         except FileNotFoundError:
@@ -56,7 +68,7 @@ def load_team() -> team.Team:
 
 
 def main() -> None:
-    print(f"gtpr by r5ne!\nat any point type {EXIT_VALUE} to quit safely")
+    print(f"gtpr by r5ne!\nat any point type {constants.EXIT_VALUE} to quit safely")
     while True:
         mode = get_mode()
         match mode:
@@ -64,7 +76,9 @@ def main() -> None:
                 make_team()
             case "r":
                 loaded_team = load_team()
-                print(loaded_team.__str__())
+                print(loaded_team)
+            case _:
+                pass
 
 
 if __name__ == "__main__":
