@@ -32,14 +32,25 @@ executionEnvironments = [
 { root = "src/gtpr" }
 ]
 pythonPlatform = "All"
+
 # ignored errors
-reportUnusedImport = false
-reportExplicitAny = false
- reportMissingTypeArgument = false
+reportUnusedImport = false  # ruff handles this
+reportImplicitStringConcatenation = false  # conflicts with ruff
+
+reportAny = false
+reportExplicitAny = false  # python is still dynamic and this is worth using
+
+reportMissingTypeArgument = false
+
+reportUnknownMemberType = false  # some inbuilt methods don't implement concrete typing
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
 
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
+    # commas
+    'COM812',
     # docstrings
     "D100", "D101", "D203", "D213",
     # flake8print
