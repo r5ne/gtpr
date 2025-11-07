@@ -39,6 +39,7 @@ select = ["ALL"]
 ignore = [
     # docstrings
     "D100", "D101", "D203", "D213",
+    "T201",
     # annotations
     "ANN204",
 ]
