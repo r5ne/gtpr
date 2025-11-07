@@ -1,3 +1,4 @@
 .venv
 .lazy.lua
+teams/*
 **/__pycache__/
