@@ -30,8 +30,9 @@ def character_factory(character_slots_available: list[str]) -> tuple[Character, 
     return Character(name=name), index
 
 
-def team_factory(unique_name: str) -> Team:
+def team_factory() -> Team:
     print("Starting team creation process...")
+    name = new_team_name()
     skill = custominput.try_until_in(
         lambda: custominput.input_quit("Team skill: "),
         constants.SKILL,
@@ -48,25 +49,21 @@ def team_factory(unique_name: str) -> Team:
     character_list = [characters[i] for i in sorted(characters.keys())]
     # model_construct doesn't have the overhead of validating data, and since it's
     # already been validated, skipping calling model_validate saves performance
-    return Team.model_construct(
-        name=unique_name, skill=skill, characters=character_list
+    new_team = Team.model_construct(
+        name=name,
+        skill=skill,
+        characters=character_list,
     )
+    return new_team
 
 
-def check_if_team_exists() -> pathlib.Path:
+def new_team_name() -> str:
     while True:
         name = custominput.input_quit("Team name: ")
         path = pathlib.Path(constants.TEAM_PATH / f"{name}.json")
         if not path.exists():
-            return path
-        print("Team already exists! Try another team name, or read the team.")
-
-
-def make_team() -> None:
-    while True:
-        team_path = check_if_team_exists()
-        new_team = team_factory(team_path.stem)
-        data.write_team(new_team, team_path)
+            return path.stem
+        print("Team already exists! Try another team name, or read the team instead.")
 
 
 def load_team() -> Team:
