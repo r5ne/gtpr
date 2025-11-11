@@ -15,7 +15,10 @@ class Team(pydantic.BaseModel):
     avg_active_character_health: float = 0
     effective_shield_health: int
     shield_health_relevance: float = 0
+    character_shield_health_substat_importance: list[float] = [0, 0, 0, 0]
     abs_character_optimal_substat_dps_diff: list[float] = [0, 0, 0, 0]
+    dps_vs_sustain_mult: float = 1
+
     def update_character_dps_substat_importance(self) -> None:
         total_substat_dps_diff = sum(
             self.characters[i].no_substat_dps_diff for i in range(4)
@@ -49,11 +52,20 @@ class Team(pydantic.BaseModel):
             2,
         )
 
+    def update_character_shield_health_substat_importance(self) -> None:
+        for i, character in enumerate(self.characters):
+            self.character_shield_health_substat_importance[i] = round(
+                self.shield_health_relevance * character.no_substat_shield_health_diff,
+                2,
+            )
+
+
 class Character(pydantic.BaseModel):
     name: str
     health: int
     no_substat_dps_diff: float
     optimal_substat_dps_diff: float
+    no_substat_shield_health_diff: float
 
 
 def character_factory(
@@ -76,6 +88,9 @@ def character_factory(
     optimal_substat_dps_diff = float(
         custominput.input_quit("Character optimal substat dps diff: ")
     )
+    no_substat_shield_health_diff = float(
+        custominput.input_quit("Character no substat shield health diff: ")
+    )
     field_time_percent = float(custominput.input_quit("Character field time percent: "))
     return (
         Character(
@@ -83,6 +98,7 @@ def character_factory(
             health=health,
             no_substat_dps_diff=no_substat_dps_diff,
             optimal_substat_dps_diff=optimal_substat_dps_diff,
+            no_substat_shield_health_diff=no_substat_shield_health_diff,
         ),
         field_time_percent,
         index,
@@ -113,6 +129,7 @@ def team_factory() -> Team:
     effective_shield_health = int(
         custominput.input_quit("Team effective shield health: ")
     )
+
     # model_construct doesn't have the overhead of validating data, and since it's
     # already been validated, skipping calling model_validate saves performance
     new_team = Team.model_construct(
@@ -156,3 +173,4 @@ def calculate_team_dps(team: Team) -> None:
 def calculate_team_shield_health(team: Team) -> None:
     team.update_avg_active_character_health()
     team.update_shield_health_relevance()
+    team.update_character_shield_health_substat_importance()
