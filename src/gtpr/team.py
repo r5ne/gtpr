@@ -10,10 +10,20 @@ class Team(pydantic.BaseModel):
     name: str
     skill: str
     characters: list[Character]
+    character_dps_substat_importance: list[float] = [0, 0, 0, 0]
+    def update_character_dps_substat_importance(self) -> None:
+        total_substat_dps_diff = sum(
+            self.characters[i].no_substat_dps_diff for i in range(4)
+        )
+        for i, character in enumerate(self.characters):
+            self.character_dps_substat_importance[i] = round(
+                (character.no_substat_dps_diff / total_substat_dps_diff) * 100, 2
+            )
 
 
 class Character(pydantic.BaseModel):
     name: str
+    no_substat_dps_diff: float
 
 
 def character_factory(character_slots_available: list[str]) -> tuple[Character, str]:
@@ -27,7 +37,16 @@ def character_factory(character_slots_available: list[str]) -> tuple[Character, 
         character_slots_available,
         "Character slot already occupied, please try another slot.",
     )
-    return Character(name=name), index
+    no_substat_dps_diff = float(
+        custominput.input_quit("Character no substat dps diff: ")
+    )
+    return (
+        Character(
+            name=name,
+            no_substat_dps_diff=no_substat_dps_diff,
+        ),
+        index,
+    )
 
 
 def team_factory() -> Team:
@@ -54,6 +73,7 @@ def team_factory() -> Team:
         skill=skill,
         characters=character_list,
     )
+    calculate_team_dps(new_team)
     return new_team
 
 
@@ -76,3 +96,7 @@ def load_team() -> Team:
             print(f"Team not found at path: {team_path}. Try a different team name")
         else:
             return Team.model_validate_json(jsondata)
+
+
+def calculate_team_dps(team: Team) -> None:
+    team.update_character_dps_substat_importance()
