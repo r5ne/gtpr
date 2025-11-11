@@ -11,6 +11,8 @@ class Team(pydantic.BaseModel):
     skill: str
     characters: list[Character]
     character_dps_substat_importance: list[float] = [0, 0, 0, 0]
+    character_field_time_percent: list[float]
+    avg_active_character_health: float = 0
     abs_character_optimal_substat_dps_diff: list[float] = [0, 0, 0, 0]
     def update_character_dps_substat_importance(self) -> None:
         total_substat_dps_diff = sum(
@@ -30,35 +32,51 @@ class Team(pydantic.BaseModel):
                 2,
             )
 
+    def update_avg_active_character_health(self) -> None:
+        self.avg_active_character_health = round(
+            sum(
+                self.character_field_time_percent[i] * character.health
+                for i, character in enumerate(self.characters)
+            )
+            / 1.04
+        )
+
 class Character(pydantic.BaseModel):
     name: str
+    health: int
     no_substat_dps_diff: float
     optimal_substat_dps_diff: float
 
 
-def character_factory(character_slots_available: list[str]) -> tuple[Character, str]:
+def character_factory(
+    character_slots_available: list[int],
+) -> tuple[Character, float, int]:
     print(
         "Starting character creation process...\n"
         f"Free character slots: {character_slots_available}",
     )
     name = custominput.input_quit("Character name: ")
     index = custominput.try_until_in(
-        lambda: custominput.input_quit("Team slot: "),
+        lambda: int(custominput.input_quit("Team slot: ")),
         character_slots_available,
         "Character slot already occupied, please try another slot.",
     )
+    health = int(custominput.input_quit("Character health: "))
     no_substat_dps_diff = float(
         custominput.input_quit("Character no substat dps diff: ")
     )
     optimal_substat_dps_diff = float(
         custominput.input_quit("Character optimal substat dps diff: ")
     )
+    field_time_percent = float(custominput.input_quit("Character field time percent: "))
     return (
         Character(
             name=name,
+            health=health,
             no_substat_dps_diff=no_substat_dps_diff,
             optimal_substat_dps_diff=optimal_substat_dps_diff,
         ),
+        field_time_percent,
         index,
     )
 
@@ -71,23 +89,29 @@ def team_factory() -> Team:
         constants.SKILL,
         f"Invalid skill rating, must be part of {constants.SKILL}",
     )
-    characters_to_add = ["1", "2", "3", "4"]
+    characters_to_add = [1, 2, 3, 4]
     characters = {}
+    character_field_time_percent = {}
     while characters_to_add:
-        character, str_index = character_factory(characters_to_add)
-        characters_to_add.remove(str_index)
-        index = int(str_index)
+        character, field_time_percent, index = character_factory(characters_to_add)
+        characters_to_add.remove(index)
         characters[index] = character
-
+        character_field_time_percent[index] = field_time_percent
     character_list = [characters[i] for i in sorted(characters.keys())]
+    character_field_time_percent_list = [
+        character_field_time_percent[i]
+        for i in sorted(character_field_time_percent.keys())
+    ]
     # model_construct doesn't have the overhead of validating data, and since it's
     # already been validated, skipping calling model_validate saves performance
     new_team = Team.model_construct(
         name=name,
         skill=skill,
         characters=character_list,
+        character_field_time_percent=character_field_time_percent_list,
     )
     calculate_team_dps(new_team)
+    calculate_team_shield_health(new_team)
     return new_team
 
 
@@ -115,3 +139,7 @@ def load_team() -> Team:
 def calculate_team_dps(team: Team) -> None:
     team.update_character_dps_substat_importance()
     team.update_abs_character_optimal_substat_dps_diff()
+
+
+def calculate_team_shield_health(team: Team) -> None:
+    team.update_avg_active_character_health()
