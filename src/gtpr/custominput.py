@@ -14,6 +14,20 @@ def input_quit(txt: str) -> str:
     return output
 
 
+def multi_line_input_quit(txt: str) -> list[str]:
+    print(
+        "The following input allows for pasting/writing multi-line data. "
+        "Type 'CTRL+Z' on windows or 'CTRL+D' on unix to save the input"
+    )
+    lines = [input(txt)]
+    while True:
+        try:
+            line = input()
+        except EOFError:
+            return lines
+        lines.append(line)
+
+
 def try_until_in[T](
     input_func: Callable[..., T],
     required: Iterable[Any],
