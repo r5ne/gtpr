@@ -13,6 +13,8 @@ class Team(pydantic.BaseModel):
     character_dps_substat_importance: list[float] = [0, 0, 0, 0]
     character_field_time_percent: list[float]
     avg_active_character_health: float = 0
+    effective_shield_health: int
+    shield_health_relevance: float = 0
     abs_character_optimal_substat_dps_diff: list[float] = [0, 0, 0, 0]
     def update_character_dps_substat_importance(self) -> None:
         total_substat_dps_diff = sum(
@@ -39,6 +41,12 @@ class Team(pydantic.BaseModel):
                 for i, character in enumerate(self.characters)
             )
             / 1.04
+        )
+
+    def update_shield_health_relevance(self) -> None:
+        self.shield_health_relevance = round(
+            self.effective_shield_health / self.avg_active_character_health,
+            2,
         )
 
 class Character(pydantic.BaseModel):
@@ -102,6 +110,9 @@ def team_factory() -> Team:
         character_field_time_percent[i]
         for i in sorted(character_field_time_percent.keys())
     ]
+    effective_shield_health = int(
+        custominput.input_quit("Team effective shield health: ")
+    )
     # model_construct doesn't have the overhead of validating data, and since it's
     # already been validated, skipping calling model_validate saves performance
     new_team = Team.model_construct(
@@ -109,6 +120,7 @@ def team_factory() -> Team:
         skill=skill,
         characters=character_list,
         character_field_time_percent=character_field_time_percent_list,
+        effective_shield_health=effective_shield_health,
     )
     calculate_team_dps(new_team)
     calculate_team_shield_health(new_team)
@@ -143,3 +155,4 @@ def calculate_team_dps(team: Team) -> None:
 
 def calculate_team_shield_health(team: Team) -> None:
     team.update_avg_active_character_health()
+    team.update_shield_health_relevance()
