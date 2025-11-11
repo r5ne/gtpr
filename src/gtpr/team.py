@@ -11,6 +11,7 @@ class Team(pydantic.BaseModel):
     skill: str
     characters: list[Character]
     character_dps_substat_importance: list[float] = [0, 0, 0, 0]
+    abs_character_optimal_substat_dps_diff: list[float] = [0, 0, 0, 0]
     def update_character_dps_substat_importance(self) -> None:
         total_substat_dps_diff = sum(
             self.characters[i].no_substat_dps_diff for i in range(4)
@@ -20,10 +21,19 @@ class Team(pydantic.BaseModel):
                 (character.no_substat_dps_diff / total_substat_dps_diff) * 100, 2
             )
 
+    def update_abs_character_optimal_substat_dps_diff(self) -> None:
+        for i, character in enumerate(self.characters):
+            self.abs_character_optimal_substat_dps_diff[i] = round(
+                character.optimal_substat_dps_diff
+                * self.character_dps_substat_importance[i]
+                / 100,
+                2,
+            )
 
 class Character(pydantic.BaseModel):
     name: str
     no_substat_dps_diff: float
+    optimal_substat_dps_diff: float
 
 
 def character_factory(character_slots_available: list[str]) -> tuple[Character, str]:
@@ -40,10 +50,14 @@ def character_factory(character_slots_available: list[str]) -> tuple[Character, 
     no_substat_dps_diff = float(
         custominput.input_quit("Character no substat dps diff: ")
     )
+    optimal_substat_dps_diff = float(
+        custominput.input_quit("Character optimal substat dps diff: ")
+    )
     return (
         Character(
             name=name,
             no_substat_dps_diff=no_substat_dps_diff,
+            optimal_substat_dps_diff=optimal_substat_dps_diff,
         ),
         index,
     )
@@ -100,3 +114,4 @@ def load_team() -> Team:
 
 def calculate_team_dps(team: Team) -> None:
     team.update_character_dps_substat_importance()
+    team.update_abs_character_optimal_substat_dps_diff()
