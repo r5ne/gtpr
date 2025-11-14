@@ -130,3 +130,15 @@ def parser_factory[Txt: str](
             return parser_failed_msg, False
 
     return parser
+
+
+def type_parser_factory(new_type: type) -> Callable[[str], tuple[Any, bool]]:
+    return parser_factory(
+        lambda txt: new_type(txt), ValueError, f"Input is not of type {new_type}."
+    )
+
+
+def str_method_parser_factory[TStr: str, TAny: Any](
+    str_method: Callable[[TStr], TAny] = str.lower,
+) -> Callable[[TStr], tuple[TAny, Literal[True]]]:
+    return lambda txt: (str_method(txt), True)
