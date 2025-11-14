@@ -32,8 +32,21 @@ def multi_line_input_quit(txt: str) -> list[str]:
         lines.append(line)
 
 
+@overload
+def get_valid_input[T: Any](
+    txt: str,
+    parser: Callable[[str], tuple[T, bool]],
+    validator: InputValidator | None = ...,
+) -> T: ...
 
 
+@overload
+def get_valid_input(
+    txt: str,
+    parser: None = ...,
+    *,
+    validator: InputValidator,
+) -> str: ...
 
 
 def get_valid_input[T: Any](
@@ -56,7 +69,26 @@ def get_valid_input[T: Any](
         return output
 
 
+@overload
+def get_valid_multi_line_input(
+    txt: str,
+    parser: None = ...,
+    *,
+    validator: InputValidator,
+    allow_partial_errors: bool = ...,
+) -> list[str]: ...
+
+
+@overload
 def get_valid_multi_line_input[T: Any](
+    txt: str,
+    parser: Callable[[str], tuple[T, bool]],
+    validator: InputValidator | None = ...,
+    *,
+    allow_partial_errors: bool = ...,
+) -> list[T]: ...
+
+
 def get_valid_multi_line_input[T: Any](
     txt: str,
     parser: Callable[[str], tuple[T, bool]] | None = None,
