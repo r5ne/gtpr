@@ -3,6 +3,7 @@ import pathlib
 import constants
 import custominput
 import data
+import gcslparser
 import pydantic
 
 
@@ -119,7 +120,48 @@ def character_factory() -> Character:
     )
 
 
+def add_build(characters: list[Character]) -> None:
+    print("Starting new build creation process...")
     while True:
+        config = custominput.multi_line_input_quit(
+            "Paste in your gcsl character config generated from genshin optimiser."
+        )
+        config = gcslparser.normalise_optimal_character_config(config)
+        character_details = gcslparser.get_character_details(config)
+        try:
+            add_details_to_character(characters, character_details)
+        except ValueError:
+            print(
+                "Character config pasted (character name: "
+                f"{character_details['character']} doesn't match any of the characters "
+                f"present in the team: {[char.name for char in characters]}."
+            )
+        else:
+            return
+
+
+def add_details_to_character(
+    characters: list[Character], details: dict[str, str]
+) -> None:
+    for character in characters:
+        if str.lower(character.name) != details["character"]:
+            continue
+        character.builds.append(
+            Build.model_construct(
+                weapon=details["weapon"],
+            )
+        )
+        if (arti_set := details["artifact_set"]) in character.best_artifact_sets:
+            character.best_artifact_sets.insert(
+                0,
+                character.best_artifact_sets.pop(
+                    character.best_artifact_sets.index(arti_set)
+                ),
+            )
+        else:
+            character.best_artifact_sets.insert(0, arti_set)
+        return
+    raise ValueError
 
 
 def load_team() -> Team:
