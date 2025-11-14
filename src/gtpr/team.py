@@ -11,6 +11,13 @@ class Build(pydantic.BaseModel):
     energy_recharge: float
 
 
+class Character(pydantic.BaseModel):
+    name: str
+    best_artifact_sets: list[str]
+    artifact_set: str
+    builds: list[Build] = []
+
+
 class TeamBuild(pydantic.BaseModel):
     team_dps: int
     character_no_substat_dps: dict[str, int]
@@ -36,38 +43,13 @@ class Team(pydantic.BaseModel):
     character_field_time_percent: list[float]
     dps_vs_sustain_mult: float = 1
 
-        )
-
 
         )
         )
 
 
-class Character(pydantic.BaseModel):
-    name: str
 
 
-def character_factory(
-    character_slots_available: list[int],
-) -> tuple[Character, float, int]:
-    print(
-        "Starting character creation process...\n"
-        f"Free character slots: {character_slots_available}",
-    )
-    name = custominput.input_quit("Character name: ")
-    index = custominput.try_until_in(
-        lambda: int(custominput.input_quit("Team slot: ")),
-        character_slots_available,
-        "Character slot already occupied, please try another slot.",
-    )
-    field_time_percent = float(custominput.input_quit("Character field time percent: "))
-    return (
-        Character(
-            name=name,
-        ),
-        field_time_percent,
-        index,
-    )
 def new_team_name() -> str:
     while True:
         name = custominput.input_quit("Team name: ")
@@ -80,34 +62,61 @@ def new_team_name() -> str:
 def team_factory() -> Team:
     print("Starting team creation process...")
     name = new_team_name()
-    skill = custominput.try_until_in(
-        lambda: custominput.input_quit("Team skill: "),
-        constants.SKILL,
+    validate_skill = custominput.validator_factory(
+        lambda txt: txt in constants.SKILL,
         f"Invalid skill rating, must be part of {constants.SKILL}",
+    )
+    skill = custominput.get_valid_input(
+        "Team skill: ",
+        parser=custominput.str_method_parser_factory(),
+        validator=validate_skill,
     )
     characters_to_add = [1, 2, 3, 4]
     characters = {}
     character_field_time_percent = {}
+    print("Starting character creation process...")
     while characters_to_add:
-        character, field_time_percent, index = character_factory(characters_to_add)
-        characters_to_add.remove(index)
+        print(f"Free character slots: {characters_to_add}")
+
+        validate_char_slot = custominput.validator_factory(
+            lambda num: num in characters_to_add,
+            "Character slot already occupied, please try another slot.",
+        )
+        index = custominput.get_valid_input(
+            "Team slot: ",
+            parser=custominput.type_parser_factory(int),
+            validator=validate_char_slot,
+        )
+        character = character_factory()
         characters[index] = character
+
+        field_time_percent = custominput.get_valid_input(
+            "Character field time percent: ", custominput.type_parser_factory(float)
+        )
         character_field_time_percent[index] = field_time_percent
+
+        characters_to_add.remove(index)
     character_list = [characters[i] for i in sorted(characters.keys())]
     character_field_time_percent_list = [
         character_field_time_percent[i]
         for i in sorted(character_field_time_percent.keys())
     ]
-
-    # model_construct doesn't have the overhead of validating data, and since it's
-    # already been validated, skipping calling model_validate saves performance
-    new_team = Team.model_construct(
+    return Team.model_construct(
         name=name,
         skill=skill,
         characters=character_list,
         character_field_time_percent=character_field_time_percent_list,
     )
-    return new_team
+
+
+def character_factory() -> Character:
+    name = custominput.input_quit("Character name: ")
+    current_artifact_set = custominput.input_quit("Character current artifact set: ")
+    return Character.model_construct(
+        name=name,
+        best_artifact_sets=[current_artifact_set],
+        artifact_set=current_artifact_set,
+    )
 
 
     while True:
