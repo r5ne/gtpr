@@ -105,9 +105,28 @@ def get_valid_multi_line_input[T: Any](
         return output
 
 
+
+
+def validator_factory[T: Any](
+    check_func: Callable[[T], bool], false_func_msg: str
+) -> InputValidator:
+    def validator(value: T) -> InputValidatorReturn:
+        if check_func(value):
+            return True, None
+        return False, false_func_msg
+
+    return validator
+
+
+def parser_factory[Txt: str](
+    parser_func: Callable[[Txt], Any],
+    error: type[BaseException],
+    parser_failed_msg: str,
+) -> Callable[[Txt], tuple[Any, bool]]:
+    def parser(txt: Txt) -> tuple[Any, bool]:
         try:
-            output = input_func()
+            return parser_func(txt), True
         except error:
-            print(error_occured_msg)
-        else:
-            return output
+            return parser_failed_msg, False
+
+    return parser
