@@ -16,13 +16,14 @@ def input_quit(txt: str) -> str:
 
 def multi_line_input_quit(txt: str) -> list[str]:
     print(
-        "The following input allows for pasting/writing multi-line data. "
-        "Type 'CTRL+Z' on windows or 'CTRL+D' on unix to save the input"
+        "The following input allows for pasting/writing multi-line data. On a blank new"
+        "line type 'CTRL+Z' on windows or 'CTRL+D' on unix and send with ENTER to save "
+        "the input"
     )
-    lines = [input(txt)]
+    lines = [input_quit(txt)]
     while True:
         try:
-            line = input()
+            line = input_quit("")
         except EOFError:
             return lines
         lines.append(line)
