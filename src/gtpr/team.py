@@ -1,4 +1,5 @@
 import pathlib
+import uuid
 
 import constants
 import custominput
@@ -8,11 +9,13 @@ import pydantic
 
 
 class Build(pydantic.BaseModel):
+    id: str = pydantic.Field(default_factory=lambda: uuid.uuid4().hex)
     weapon: str
     energy_recharge: float
 
 
 class Character(pydantic.BaseModel):
+    id: str = pydantic.Field(default_factory=lambda: uuid.uuid4().hex)
     name: str
     best_artifact_sets: list[str]
     artifact_set: str
@@ -20,6 +23,8 @@ class Character(pydantic.BaseModel):
 
 
 class TeamBuild(pydantic.BaseModel):
+    id: str = pydantic.Field(default_factory=lambda: uuid.uuid4().hex)
+    builds: dict[str, str]
     team_dps: int
     character_no_substat_dps: dict[str, int]
     character_optimal_artifact_dps: dict[str, int]
@@ -43,6 +48,8 @@ class Team(pydantic.BaseModel):
     characters: list[Character]
     character_field_time_percent: list[float]
     dps_vs_sustain_mult: float = 1
+    team_builds: list[TeamBuild] = []
+    active_team_build_id: str | None = None
 
 
         )
@@ -162,6 +169,19 @@ def add_details_to_character(
             character.best_artifact_sets.insert(0, arti_set)
         return
     raise ValueError
+
+
+def set_active_team_build(team: Team, build: TeamBuild) -> None:
+    if not build.character_substat_importance:
+        msg = "Build has not had its values calculated yet, cannot activate team build."
+        raise ValueError(msg)
+    team.active_team_build_id = build.id
+
+
+def get_active_team_build(team: Team) -> TeamBuild:
+    return next(
+        build for build in team.team_builds if build.id == team.active_team_build_id
+    )
 
 
 def load_team() -> Team:
