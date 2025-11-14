@@ -7,12 +7,13 @@ import team
 
 
 def get_mode() -> str:
-    return custominput.try_until_in(
-        lambda: custominput.input_quit(
-            'Write or read team? "w" for write and "r" for read. ',
-        ),
-        ("w", "r"),
-        "Invalid mode selected, please try again.",
+    validator = custominput.validator_factory(
+        lambda txt: txt in {"w", "r"}, "Invalid mode selected, please try again."
+    )
+    return custominput.get_valid_input(
+        "Write or read team? 'w' for write and 'r' for read. ",
+        parser=custominput.str_method_parser_factory(),
+        validator=validator,
     )
 
 
@@ -27,7 +28,22 @@ def write_mode() -> None:
 
 def read_mode() -> None:
     loaded_team = team.load_team()
-    print(loaded_team)
+    validator = custominput.validator_factory(
+        lambda txt: txt in {"v", "e", "r"}, "Invalid mode selected, please try again."
+    )
+    read_mode = custominput.get_valid_input(
+        "Team successfully loaded!\nView team, edit team or recalculate data? 'v' "
+        "for view, 'e' for edit and 'r' for recalculate.",
+        parser=custominput.str_method_parser_factory(),
+        validator=validator,
+    )
+    match read_mode:
+        case "v":
+            print(loaded_team)
+        case "e":
+            ...
+        case _:
+            pass
 
 
 def main() -> None:
