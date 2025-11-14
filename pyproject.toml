@@ -34,15 +34,22 @@ executionEnvironments = [
 pythonPlatform = "All"
 
 # ignored errors
-reportUnusedImport = false  # ruff handles this
-reportImplicitStringConcatenation = false  # conflicts with ruff
 
+# ruff handled
+reportUnusedImport = false
+reportUnusedParameter = false
+reportUnusedVariable = false
+
+# conflicts with ruff
+reportImplicitStringConcatenation = false
+
+# python is still dynamic and this is worth using
 reportAny = false
-reportExplicitAny = false  # python is still dynamic and this is worth using
-
+reportExplicitAny = false
 reportMissingTypeArgument = false
 
-reportUnknownMemberType = false  # some inbuilt methods don't implement concrete typing
+# some inbuilt methods don't implement concrete typing
+reportUnknownMemberType = false
 reportUnknownVariableType = false
 reportUnknownArgumentType = false
 
