@@ -1,10 +1,13 @@
 import sys
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal, overload
 
 import constants
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
+
+type InputValidatorReturn = tuple[Literal[False], str] | tuple[Literal[True], None]
+type InputValidator = Callable[[Any], InputValidatorReturn]
 
 
 def input_quit(txt: str) -> str:
@@ -44,7 +47,64 @@ def try_until_no_error[T](
     error: type[BaseException],
     error_occured_msg: str,
 ) -> T:
+
+
+def get_valid_input[T: Any](
+    txt: str,
+    parser: Callable[[str], tuple[T, bool]] | None = None,
+    validator: InputValidator | None = None,
+) -> T | str:
     while True:
+        output = input_quit(txt)
+        if parser is not None:
+            output, successful = parser(output)
+            if not successful:
+                print(output)
+                continue
+        if validator is not None:
+            valid, err_msg = validator(output)
+            if not valid:
+                print(err_msg)
+                continue
+        return output
+
+
+def get_valid_multi_line_input[T: Any](
+def get_valid_multi_line_input[T: Any](
+    txt: str,
+    parser: Callable[[str], tuple[T, bool]] | None = None,
+    validator: InputValidator | None = None,
+    *,
+    allow_partial_errors: bool = False,
+) -> list[T] | list[str]:
+    while True:
+        output_lines = multi_line_input_quit(txt)
+        output = []
+        invalid_line = False
+        for line in output_lines:
+            current_line = line
+            if parser is not None:
+                current_line, successful = parser(current_line)
+                if not successful:
+                    print(current_line)
+                    if allow_partial_errors:
+                        continue
+                    invalid_line = True
+                    break
+            if validator is not None:
+                valid, err_msg = validator(current_line)
+                if not valid:
+                    print(err_msg)
+                    if allow_partial_errors:
+                        continue
+                    invalid_line = True
+                    break
+            output.append(current_line)
+        if invalid_line and not allow_partial_errors:
+            continue
+        return output
+
+
         try:
             output = input_func()
         except error:
