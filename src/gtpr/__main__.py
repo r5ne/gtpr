@@ -19,6 +19,9 @@ def get_mode() -> str:
 
 def write_mode() -> None:
     new_team = team.team_factory()
+    for _ in range(4):
+        team.add_build(new_team.characters)
+    team.add_team_build(new_team)
     print(new_team)
     data.write_team(
         new_team,
@@ -42,8 +45,25 @@ def read_mode() -> None:
             print(loaded_team)
         case "e":
             ...
+        case "r":
+            read_recalculate_mode(loaded_team)
         case _:
             pass
+
+
+def read_recalculate_mode(team_: team.Team) -> None:
+    validator = custominput.validator_factory(
+        lambda index: index >= len(team_.team_builds),
+        "Team build of index specified does not exist!",
+    )
+    index = custominput.get_valid_input(
+        "Enter the index for the team build to recalculate from available team "
+        f"builds: {team_.team_builds}",
+        parser=custominput.type_parser_factory(int),
+        validator=validator,
+    )
+    team.calculate_dps_diffs(team_, team_.team_builds[index])
+    team.calculate_substat_importance(team_, team_.team_builds[index])
 
 
 def main() -> None:

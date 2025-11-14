@@ -196,6 +196,62 @@ def add_details_to_character(
     raise ValueError
 
 
+def add_team_build(team: Team) -> None:
+    print(f"Starting new team build creation process for team: {team.name}...")
+    builds = {}
+    character_no_substat_dps = {}
+    character_optimal_artifact_dps = {}
+    for character in team.characters:
+        validate_in_build = custominput.validator_factory(
+            lambda index, char=character: index in set(range(len(char.builds))),
+            "Build index out of range.",
+        )
+        index = custominput.get_valid_input(
+            f"From the current available builds for {character.name}: "
+            f"{character.builds}, give the index of the build to use for this team: ",
+            parser=custominput.type_parser_factory(int),
+            validator=validate_in_build,
+        )
+        builds[character.id] = character.builds[index].id
+        no_substat_dps = custominput.get_valid_input(
+            "Character no substat dps: ", custominput.type_parser_factory(float)
+        )
+        character_no_substat_dps[character.id] = no_substat_dps
+        optimal_artifact_dps = custominput.get_valid_input(
+            "Character optimal artifact & substat dps: ",
+            custominput.type_parser_factory(float),
+        )
+
+        character_optimal_artifact_dps[character.id] = optimal_artifact_dps
+    team_dps = custominput.get_valid_input(
+        "Team dps: ", custominput.type_parser_factory(int)
+    )
+    new_team_build = TeamBuild(
+        builds=builds,
+        team_dps=team_dps,
+        character_no_substat_dps=character_no_substat_dps,
+        character_optimal_artifact_dps=character_optimal_artifact_dps,
+    )
+    calculate_dps_diffs(team, new_team_build)
+    calculate_substat_importance(team, new_team_build)
+
+    team.team_builds.append(new_team_build)
+    if team.active_team_build_id is not None:
+        validate_yesno = custominput.validator_factory(
+            lambda txt: txt in {"y", "n"},
+            "Invalid answer, requires 'y' or 'n' as an answer",
+        )
+        update_team_build_to_current = (
+            custominput.get_valid_input(
+                "Update active build to current build? 'y' for yes, 'n' for no: ",
+                validator=validate_yesno,
+            ),
+        )
+        if update_team_build_to_current == "n":
+            return
+    set_active_team_build(team, new_team_build)
+
+
 def set_active_team_build(team: Team, build: TeamBuild) -> None:
     if not build.character_substat_importance:
         msg = "Build has not had its values calculated yet, cannot activate team build."
