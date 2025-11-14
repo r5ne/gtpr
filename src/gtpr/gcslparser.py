@@ -4,7 +4,7 @@ def normalise_optimal_character_config(config: list[str]) -> list[str]:
         stripped_line = line.strip()
         if not stripped_line or stripped_line.startswith("#"):
             continue
-        normalised_config.append(stripped_line[:-1])
+        normalised_config.append(stripped_line.rstrip(";"))
     return normalised_config
 
 
