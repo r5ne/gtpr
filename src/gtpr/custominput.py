@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Literal, overload
 import constants
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable
+    from collections.abc import Callable
 
 type InputValidatorReturn = tuple[Literal[False], str] | tuple[Literal[True], None]
 type InputValidator = Callable[[Any], InputValidatorReturn]
@@ -32,21 +32,8 @@ def multi_line_input_quit(txt: str) -> list[str]:
         lines.append(line)
 
 
-def try_until_in[T](
-    input_func: Callable[..., T],
-    required: Iterable[Any],
-    not_in_msg: str,
-) -> T:
-    while (output := input_func()) not in required:
-        print(not_in_msg)
-    return output
 
 
-def try_until_no_error[T](
-    input_func: Callable[..., T],
-    error: type[BaseException],
-    error_occured_msg: str,
-) -> T:
 
 
 def get_valid_input[T: Any](
@@ -105,6 +92,26 @@ def get_valid_multi_line_input[T: Any](
         return output
 
 
+def combine_validators(
+    *validators: InputValidator,
+    log_all_errors: bool = True,
+) -> InputValidator:
+    def combined(value: Any) -> InputValidatorReturn:
+        error_msgs = ""
+        for validator in validators:
+            valid, error_msg = validator(value)
+            if valid:
+                continue
+            if not log_all_errors:
+                assert error_msg, str
+                return False, error_msg
+            error_msgs += f"{error_msg}\n"
+
+        if error_msgs:
+            return False, error_msgs
+        return True, None
+
+    return combined
 
 
 def validator_factory[T: Any](
