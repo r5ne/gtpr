@@ -8,9 +8,13 @@ def normalise_optimal_character_config(config: list[str]) -> list[str]:
     return normalised_config
 
 
-def get_character_details(config: list[str]) -> dict[str, str]:
-    detail_dict = {}
-    detail_dict["character"] = config[0].split()[0]
-    detail_dict["weapon"] = config[1].split('"')[1]
-    detail_dict["artifact_set"] = config[2].split('"')[1]
-    return detail_dict
+def get_character_name(config: list[str]) -> str:
+    return config[0].split()[0]
+
+
+def get_character_weapon(config: list[str]) -> str:
+    return config[1].split('"')[1]
+
+
+def get_character_artifact_set(config: list[str]) -> str:
+    return config[2].split('"')[1]
