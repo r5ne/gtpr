@@ -12,8 +12,9 @@ import pydantic
 
 class Build(pydantic.BaseModel):
     id: str = pydantic.Field(default_factory=lambda: uuid.uuid4().hex)
-    weapon: str
-    energy_recharge: float
+    weapon: str = ""
+    energy_requirements: float = 0
+
     @override
     def __str__(self) -> str:
         return (
@@ -25,9 +26,9 @@ class Build(pydantic.BaseModel):
 class Character(pydantic.BaseModel):
     id: str = pydantic.Field(default_factory=lambda: uuid.uuid4().hex)
 
-    name: str
-    best_artifact_sets: list[str]
-    artifact_set: str
+    name: str = ""
+    best_artifact_sets: list[str] = []
+    artifact_set: str = ""
     builds: list[Build] = []
 
     @override
@@ -40,10 +41,10 @@ class Character(pydantic.BaseModel):
 
 class TeamBuild(pydantic.BaseModel):
     id: str = pydantic.Field(default_factory=lambda: uuid.uuid4().hex)
-    builds: dict[str, str]
-    team_dps: int
-    character_no_substat_dps: dict[str, int]
-    character_optimal_artifact_dps: dict[str, int]
+    builds: dict[str, str] = {}
+    team_dps: int = 0
+    character_no_substat_dps: dict[str, int] = {}
+    character_optimal_artifact_dps: dict[str, int] = {}
     character_no_substat_dps_diff: dict[str, int] = {}
     character_no_substat_optimal_dps_diff: dict[str, int] = {}
     team_no_substat_optimal_dps_diff: int = 0
@@ -64,9 +65,9 @@ class TeamBuild(pydantic.BaseModel):
 
 class Team(pydantic.BaseModel):
     name: str
-    skill: str
-    characters: list[Character]
-    character_field_time_percent: list[float]
+    skill: str = ""
+    characters: list[Character] = []
+    character_field_time_percent: list[float] = []
     dps_vs_sustain_mult: float = 1
     team_builds: list[TeamBuild] = []
     active_team_build_id: str | None = None
