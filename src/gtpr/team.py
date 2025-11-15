@@ -1,5 +1,6 @@
 import pathlib
 import uuid
+from typing import override
 
 import calc
 import constants
@@ -13,6 +14,12 @@ class Build(pydantic.BaseModel):
     id: str = pydantic.Field(default_factory=lambda: uuid.uuid4().hex)
     weapon: str
     energy_recharge: float
+    @override
+    def __str__(self) -> str:
+        return (
+            f"Weapon: {self.weapon}, Energy requirements: "
+            f"{self.energy_requirements * 100}%"
+        )
 
 
 class Character(pydantic.BaseModel):
@@ -22,6 +29,13 @@ class Character(pydantic.BaseModel):
     best_artifact_sets: list[str]
     artifact_set: str
     builds: list[Build] = []
+
+    @override
+    def __str__(self) -> str:
+        return (
+            f"Name: {self.name}\nCurrent artifact set: {self.artifact_set}, Best "
+            f"artifact set: {self.best_artifact_sets[0]},"
+        )
 
 
 class TeamBuild(pydantic.BaseModel):
@@ -43,6 +57,10 @@ class TeamBuild(pydantic.BaseModel):
     # shield_health_relevance: int
     # character_shield_health_substat_importance: dict[str, int]
 
+    @override
+    def __str__(self) -> str:
+        return f"\nTeam DPS: {self.team_dps}"
+
 
 class Team(pydantic.BaseModel):
     name: str
@@ -53,7 +71,35 @@ class Team(pydantic.BaseModel):
     team_builds: list[TeamBuild] = []
     active_team_build_id: str | None = None
 
+    @override
+    def __str__(self) -> str:
+        active_team_build = get_active_team_build(self)
+        characters_full = ""
+        for i, character in enumerate(self.characters):
+            build = get_character_build_from_id(
+                character, active_team_build.builds[character.id]
+            )
+            substat_importance = active_team_build.character_substat_importance[
+                character.id
+            ]
+            personal_substat_power = active_team_build.absolute_character_substat_power[
+                character.id
+            ]
+            absolute_substat_power = active_team_build.relative_character_substat_power[
+                character.id
+            ]
+            field_time = self.character_field_time_percent[i]
+            characters_full += (
+                f"{character!s} Field time: {field_time * 100}%, Current Build:\n"
+                f"{build!s}, Substat importance to team DPS: "
+                f"{round(substat_importance * 100, 2)}%, Personal substat value: "
+                f"{round(personal_substat_power * 100, 2)}%, Teamwide substat "
+                f"value: {round(absolute_substat_power * 100, 2)}%\n"
+            )
 
+        return (
+            f"Team {self.name}:\nSkill: {self.skill}, Team DPS: "
+            f"{active_team_build!s}, Characters:\n{characters_full}"
         )
 
 
@@ -246,6 +292,10 @@ def get_active_team_build(team: Team) -> TeamBuild:
     return next(
         build for build in team.team_builds if build.id == team.active_team_build_id
     )
+
+
+def get_character_build_from_id(character: Character, character_id: str) -> Build:
+    return next(build for build in character.builds if build.id == character_id)
 
 
 def load_team() -> Team:
