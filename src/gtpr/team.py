@@ -1,6 +1,7 @@
 import pathlib
 import uuid
 
+import calc
 import constants
 import custominput
 import data
@@ -53,33 +54,12 @@ class Team(pydantic.BaseModel):
     active_team_build_id: str | None = None
 
 
-def calculate_dps_diffs(team: Team, team_build: TeamBuild) -> None:
-    for character in team.characters:
-        team_build.character_no_substat_dps_diff[character.id] = (
-            team_build.team_dps - team_build.character_no_substat_dps[character.id]
         )
-        team_build.character_no_substat_optimal_dps_diff[character.id] = (
-            team_build.character_optimal_artifact_dps[character.id]
-            - team_build.character_no_substat_dps[character.id]
-        )
-    team_build.team_no_substat_optimal_dps_diff = sum(
-        team_build.character_no_substat_optimal_dps_diff.values()
     )
 
 
-def calculate_substat_importance(team: Team, team_build: TeamBuild) -> None:
-    for character in team.characters:
-        team_build.absolute_character_substat_power[character.id] = (
-            team_build.character_no_substat_dps_diff[character.id]
-            / team_build.character_no_substat_optimal_dps_diff[character.id]
         )
-        team_build.relative_character_substat_power[character.id] = (
-            team_build.character_no_substat_dps_diff[character.id]
-            / team_build.team_no_substat_optimal_dps_diff
         )
-        team_build.character_substat_importance[character.id] = (
-            team_build.character_no_substat_optimal_dps_diff[character.id]
-            / team_build.team_no_substat_optimal_dps_diff
         )
 
 
@@ -232,8 +212,8 @@ def add_team_build(team: Team) -> None:
         character_no_substat_dps=character_no_substat_dps,
         character_optimal_artifact_dps=character_optimal_artifact_dps,
     )
-    calculate_dps_diffs(team, new_team_build)
-    calculate_substat_importance(team, new_team_build)
+    calc.calculate_dps_diffs(team, new_team_build)
+    calc.calculate_substat_importance(team, new_team_build)
 
     team.team_builds.append(new_team_build)
     if team.active_team_build_id is not None:
@@ -241,11 +221,9 @@ def add_team_build(team: Team) -> None:
             lambda txt: txt in {"y", "n"},
             "Invalid answer, requires 'y' or 'n' as an answer",
         )
-        update_team_build_to_current = (
-            custominput.get_valid_input(
-                "Update active build to current build? 'y' for yes, 'n' for no: ",
-                validator=validate_yesno,
-            ),
+        update_team_build_to_current = custominput.get_valid_input(
+            "Update active build to current build? 'y' for yes, 'n' for no: ",
+            validator=validate_yesno,
         )
         if update_team_build_to_current == "n":
             return
