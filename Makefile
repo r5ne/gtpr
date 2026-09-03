@@ -1,6 +1,6 @@
 PACMAN := uv
-PACMANFLAGS := run python
-SOURCE := src/gtpr
+PACMANFLAGS := run streamlit run
+SOURCE := main.py
 
 .PHONY: all
 
