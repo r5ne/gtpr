@@ -2,18 +2,68 @@
 name = "gtpr"
 version = "0.1.0"
 description = "genshin team power ranking"
-authors = [
-    {name = "r5ne"}
-]
-readme = "README.md"
+authors = [{ name = "r5ne" }]
 requires-python = ">=3.14"
+readme = "README.md"
 dependencies = [
+    "pydantic>=2.12.3",
 ]
 
-[tool.poetry]
-packages = [{include = "gtpr", from = "src"}]
+[tool.hatch.build.targets.sdist]
+include = ["src/gtpr"]
 
+[tool.hatch.build.targets.wheel]
+include = ["src/gtpr"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src/gtpr" = "gtpr"
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "debugpy>=1.8.17",
+]
+
+[tool.basedpyright]
+executionEnvironments = [
+{ root = "src/gtpr" }
+]
+pythonPlatform = "All"
+
+# ignored errors
+
+# ruff handled
+reportUnusedImport = false
+reportUnusedParameter = false
+reportUnusedVariable = false
+
+# conflicts with ruff
+reportImplicitStringConcatenation = false
+
+# python is still dynamic and this is worth using
+reportAny = false
+reportExplicitAny = false
+reportMissingTypeArgument = false
+
+# some inbuilt methods don't implement concrete typing
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    # annotations
+    "ANN204", "ANN401",
+    # commas
+    'COM812',
+    # docstrings
+    "D100", "D101", "D203", "D213",
+    # flake8print
+    "T201",
+    # flake8bandit
+    "S101",
+]
