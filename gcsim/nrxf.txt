@@ -1,0 +1,77 @@
+raiden char lvl=90/90 cons=0 talent=9,10,10;
+raiden add weapon="dragonsbane" refine=5 lvl=90/90;
+raiden add set="gd" count=5;
+raiden add stats hp=7359 def=40 atk=464 er=0.363 em=751 cr=0.113 cd=0.622;
+
+fischl char lvl=90/90 cons=6 talent=2,10,9;
+fischl add weapon="thefirstgreatmagic" refine=1 lvl=90/90;
+fischl add set="gt" count=5;
+fischl add stats hp=6495 def=225 atk=817 er=0.356 em=42 cr=0.785 cd=0.583 electro%=0.466;
+
+xingqiu char lvl=90/90 cons=6 talent=3,9,10;
+xingqiu add weapon="haran" refine=1 lvl=90/90;
+xingqiu add set="emblemofseveredfate" count=4;
+xingqiu add stats hp=4780 def=53 atk=946 er=0.44 em=77 cr=0.358 cd=1.135 hydro%=0.466;
+
+nahida char lvl=90/90 cons=0 talent=8,10,9;
+nahida add weapon="thewidsith" refine=3 lvl=90/90;
+nahida add set="deepwoodmemories" count=4;
+nahida add stats hp=7253 def=88 atk=452 er=0.168 em=247 cr=0.661 cd=0.963 dendro%=0.466;
+
+
+options swap_delay=12 iteration=1000;
+target lvl=100 resist=0.1 radius=3 pos=0,3.5 hp=999999999; 
+energy every interval=480,720 amount=1;
+
+active nahida;
+
+    nahida skill;
+    
+for let i=0; i<4; i=i+1 {
+
+    nahida burst;
+    if i != 0 {
+      nahida attack, charge, dash, charge;
+    }
+    
+    raiden skill;
+    if i != 0 {
+      raiden attack;
+    }
+    
+    fischl skill, attack;
+    
+    xingqiu burst, attack;
+    
+    nahida attack:2, skill,
+           attack:3, charge,
+           attack:3, dash,
+           attack:3, dash,
+           attack:2, charge;
+
+    fischl attack:2, burst;
+
+    xingqiu attack, skill, dash, attack:2;
+    nahida attack:2, skill,
+           attack:2, dash,
+           attack:3, dash,
+           attack:2, dash,
+           attack:3;
+           
+    print("done");
+}
+
+wait(12);
+
+# 6% of the field time controls 49% of the dps
+
+# changelog
+#   - stat solver: hessey
+# - initial sim: vigne
+# - 4tf 23.5s rotation: lettuce hunt
+# - raiden E opener, N2/N3 optimization: skippi
+# - lionsroar xingqiu: xardas (90k record)
+# - sim wait() cutoff: skippi
+# - wait(12) fischl burst: charlie
+# - N1Q fischl, raiden before fischl: lettuce hunt
+# - fixed rotation with gt fischl and wolffang xingqiu ocram2012 (94.5k)
