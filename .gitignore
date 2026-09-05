@@ -1,6 +1,6 @@
 .venv
 .idea
 data
+archive
 .lazy.lua
-teams/*
 **/__pycache__/
