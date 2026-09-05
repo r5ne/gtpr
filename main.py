@@ -1,6 +1,7 @@
 import streamlit as st
+from services import io
 
 st.set_page_config(page_title="GTPR", layout="wide")
 
-nav = st.navigation([home_page, team_creation_page], position="hidden")
-nav.run()
+if "teams" not in st.session_state:
+    st.session_state.teams = io.read_teams()
