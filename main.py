@@ -1,7 +1,6 @@
 import streamlit as st
 
-home_page = st.Page("pages/home_screen.py")
-team_creation_page = st.Page("pages/team_creation.py")
+st.set_page_config(page_title="GTPR", layout="wide")
 
 nav = st.navigation([home_page, team_creation_page], position="hidden")
 nav.run()
