@@ -1,7 +1,17 @@
 import streamlit as st
+from services import io
 
-home_page = st.Page("pages/home_screen.py")
-team_creation_page = st.Page("pages/team_creation.py")
+st.set_page_config(page_title="GTPR", layout="wide")
 
-nav = st.navigation([home_page, team_creation_page], position="hidden")
-nav.run()
+if "teams" not in st.session_state:
+    st.session_state.teams = io.read_teams()
+
+pages = {
+    "Teams": [
+        st.Page("pages/1_home.py", title="Dashboard"),
+        st.Page("pages/2_team_builder.py", title="Team Builder"),
+    ],
+}
+
+pg = st.navigation(pages)
+pg.run()
