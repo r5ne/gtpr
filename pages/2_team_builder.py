@@ -9,7 +9,7 @@ col_select, col_create = st.columns([2, 1])
 with col_select:
     if st.session_state.teams:
         team_names = [t.name for t in st.session_state.teams]
-        selected_team_name = st.selectbox("Load Team Dashboard", team_names, label_visibility="collapsed")
+        selected_team_name = st.selectbox("Load Team", team_names, label_visibility="collapsed")
         active_team = next(t for t in st.session_state.teams if t.name == selected_team_name)
     else:
         st.warning("No teams found. Create one below.")
@@ -29,8 +29,8 @@ st.divider()
 
 if active_team:
     col_title, col_save = st.columns([5, 1])
-    col_title.title(f"📊 {active_team.name} Dashboard")
-    if col_save.button("💾 Save Dashboard Changes", use_container_width=True):
+    col_title.title(f"📊 {active_team.name}")
+    if col_save.button("💾 Save Team Changes", use_container_width=True):
         io.write_team(active_team)
         st.success("Saved!")
 
