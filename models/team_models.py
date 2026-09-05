@@ -1,18 +1,27 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-class Character(BaseModel):
-    name: str
+MAX_ROLL_VALUE = 4500
+
+class CharacterBuild(BaseModel):
+    name: str = "Empty slot"
+    # These represent TEAM DPS when this specific character's stats are manipulated
+    dps_floor: int = 0
+    dps_ceiling: int = 0
+    roll_value: int = 0
+
+    def get_progress(self, team_dps: int) -> float:
+        if self.dps_floor == self.dps_ceiling:
+            return 0.0
+        return (team_dps - self.dps_floor) / (self.dps_ceiling - self.dps_floor)
+
+    def get_upgrade_difficulty(self) -> float:
+        return 1.0 - (self.roll_value / MAX_ROLL_VALUE)
+
+    def get_priority_score(self, team_dps: int) -> float:
+        return self.get_upgrade_difficulty() * (self.dps_ceiling - team_dps)
 
 class Team(BaseModel):
-    # Directly passed in stats
     name: str
-    characters: list[Character] = []
-    dps: int = 0
-    per_character_dps_floor: list[int] = []
-    dps_ceil: int = 0
-
-    # Derived stats
-    per_character_artifact_dps_diff: list[int] = []
-    build_progress: int = 0
-    unrealised_dps: int = 0
-
+    # The actual Team DPS with everyone's current artifacts
+    team_dps: int = 0
+    character_builds: list[CharacterBuild] = Field(default_factory=lambda: [CharacterBuild(name=f"Character {i+1}") for i in range(4)])
