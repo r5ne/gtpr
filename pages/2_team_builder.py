@@ -70,14 +70,18 @@ if active_team:
 
     st.subheader("Total Team Performance")
     with st.container(border=True):
-        bot_col1, bot_col2 = st.columns([1, 3])
+        bot_col1, bot_col2, bot_col3 = st.columns([1.5, 1.5, 3])
 
         with bot_col1:
-            active_team.team_dps = st.number_input(
-                "Overall Team DPS",
-                value=active_team.team_dps,
-                step=500
-            )
+            st.metric("Current Team Output", f"{active_team.team_dps:,} DPS")
 
         with bot_col2:
-            st.info("Update the overall Team DPS to instantly recalculate Character Progress and Priority Scores across all columns.")
+            active_team.team_dps = st.number_input(
+                "Edit Team DPS",
+                value=active_team.team_dps,
+                step=500,
+                key=f"{active_team.name}_team_dps"
+            )
+
+        with bot_col3:
+            st.info("Modifying any input field instantly updates all progress and priority metrics above.")
