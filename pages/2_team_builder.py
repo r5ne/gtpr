@@ -40,6 +40,9 @@ if active_team:
 
     for i, col in enumerate(char_cols):
         char = active_team.character_builds[i]
+
+        prefix = f"{active_team.name}_char{i}"
+
         with col:
             with st.container(border=True):
                 char.name = st.text_input(f"Slot {i+1}", value=char.name, label_visibility="collapsed", key=f"name_{i}")
