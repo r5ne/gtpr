@@ -1,10 +1,11 @@
+import math
+
 from pydantic import BaseModel, Field
 
 MAX_ROLL_VALUE = 4500
 
 class CharacterBuild(BaseModel):
     name: str = "Empty slot"
-    # These represent TEAM DPS when this specific character's stats are manipulated
     dps_floor: int = 0
     dps_ceiling: int = 0
     roll_value: int = 0
@@ -15,9 +16,14 @@ class CharacterBuild(BaseModel):
         return (team_dps - self.dps_floor) / (self.dps_ceiling - self.dps_floor)
 
     def get_upgrade_difficulty(self) -> float:
-        return 1.0 - (self.roll_value / MAX_ROLL_VALUE)
+        # MAX ROLL VALUE (max_rolls) = 45
+        # ROLL DISTRIBUTION STANDARD DEVIATION (sd) = 15
+        # ( e^-( (roll_value/sd)^2 ) - e^-( (max_rolls/sd)^2 ) ) ) / ( 1-e^-( (max_rolls/sd)^2 ) )
 
-    def get_priority_score(self, team_dps: int) -> float:
+        core_term = math.exp(-(self.roll_value ** 2) / 2250000)
+        return (core_term - 0.00012341) / 0.99987659
+
+    def get_raw_priority_score(self, team_dps: int) -> float:
         return self.get_upgrade_difficulty() * (self.dps_ceiling - team_dps)
 
 
