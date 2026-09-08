@@ -38,7 +38,9 @@ by how much would team DPS increase by were that upgrade to be made.
 current DPS: The team's current DPS  
 DPS ceiling: The team's DPS with the character using mathematically perfect substats.  
 Upgrade difficulty modifier: Explained above  
-$Priority\ score\ (raw) = (DPS\ ceiling - current\ DPS) \times (Upgrade\ difficulty\ modifier)$
+```math
+Priority\ score\ (raw) = (DPS\ ceiling - current\ DPS) \times (Upgrade\ difficulty\ modifier)
+```
 
 ## Obtaining the values used in the formulas
 Current DPS:
