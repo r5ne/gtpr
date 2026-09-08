@@ -6,33 +6,39 @@ GTPR considers:
 - The difficulty of upgrading a character.  
 
 # Formulas
-The build level of a character is determined as:
-> $current\ DPS$: The team's current DPS  
-> $DPS\ floor$: The team's DPS with all of the character's offensive substats removed
+The build level of a character is determined as:  
+
+$current\ DPS$: The team's current DPS  
+$DPS\ floor$: The team's DPS with all of the character's offensive substats removed
            (keeping required stats like ER and CR for fav).  
-> $DPS\ ceiling$: The team's DPS with the character using mathematically perfect substats.
-> $Character\ build\ level\ (\%) = \dfrac{current\ DPS - DPS\ floor}{DPS\ ceiling - DPS\ floor}$
+$DPS\ ceiling$: The team's DPS with the character using mathematically perfect substats.
+
+```math
+Character\ build\ level\ (\%) = \dfrac{current\ DPS - DPS\ floor}{DPS\ ceiling - DPS\ floor}
+```
 
 The difficulty of upgrading a character is determined as:
 > [!NOTE]
 > The number is in the form of a negative modifier - a smaller value means more difficult.
 
-> $roll\ value$: The total amount of useful rolls on the current character where 1 max roll = 100.
+$roll\ value$: The total amount of useful rolls on the current character where 1 max roll = 100.
             This assumes that the number of useful rolls of a particular stat is never greater 
             than the number of rolls of that stat given by the rolls assigned in the DPS ceiling.  
-> $45$: The maximum number of rolls for any character.  
-> $15$: The standard deviation of roll distribution among all artifacts.  
-> $Upgrade\ difficulty\ modifier\ (\%) = \dfrac{e^{-\left( \dfrac{roll\ value}{1500}\right)^2} - e^{-\left( \dfrac{4500}{1500}\right)^2}}{1-e^{-\left(\dfrac{4500}{1500} \right)^2}}$
+$45$: The maximum number of rolls for any character.  
+$15$: The standard deviation of roll distribution among all artifacts.  
+```math
+Upgrade\ difficulty\ modifier\ (\%) = \dfrac{e^{-\left( \dfrac{roll\ value}{1500}\right)^2} - e^{-\left( \dfrac{4500}{1500}\right)^2}}{1-e^{-\left(\dfrac{4500}{1500} \right)^2}}
+```
 
 The priority score of upgrading a character is determined as:
 > [!NOTE]
 > This value takes into account the difficulty of an upgrade and with that normalized calculates 
 by how much would team DPS increase by were that upgrade to be made.  
 
-> current DPS: The team's current DPS  
-> DPS ceiling: The team's DPS with the character using mathematically perfect substats.  
-> Upgrade difficulty modifier: Explained above  
-> $Priority\ score\ (raw) = (DPS\ ceiling - current\ DPS) \times (Upgrade\ difficulty\ modifier)$
+current DPS: The team's current DPS  
+DPS ceiling: The team's DPS with the character using mathematically perfect substats.  
+Upgrade difficulty modifier: Explained above  
+$Priority\ score\ (raw) = (DPS\ ceiling - current\ DPS) \times (Upgrade\ difficulty\ modifier)$
 
 ## Obtaining the values used in the formulas
 Current DPS:
