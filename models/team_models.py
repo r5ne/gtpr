@@ -20,8 +20,20 @@ class CharacterBuild(BaseModel):
     def get_priority_score(self, team_dps: int) -> float:
         return self.get_upgrade_difficulty() * (self.dps_ceiling - team_dps)
 
+
 class Team(BaseModel):
     name: str
-    # The actual Team DPS with everyone's current artifacts
     team_dps: int = 0
-    character_builds: list[CharacterBuild] = Field(default_factory=lambda: [CharacterBuild(name=f"Character {i+1}") for i in range(4)])
+    character_builds: list[CharacterBuild] = Field(
+        default_factory=lambda: [CharacterBuild(name=f"Character {i+1}") for i in range(4)]
+    )
+
+    @property
+    def total_raw_priority(self) -> float:
+        return sum(char.get_raw_priority_score(self.team_dps) for char in self.character_builds)
+
+    def get_relative_priority_score(self, character: CharacterBuild) -> float:
+        total = self.total_raw_priority
+        if total == 0:
+            return 0.0
+        return character.get_raw_priority_score(self.team_dps) / total
