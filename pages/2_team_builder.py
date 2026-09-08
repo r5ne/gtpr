@@ -29,7 +29,7 @@ st.divider()
 
 if active_team:
     col_title, col_save = st.columns([5, 1])
-    col_title.title(f"📊 {active_team.name}")
+    col_title.title(f"{active_team.name}")
     if col_save.button("💾 Save Team Changes", use_container_width=True):
         io.write_team(active_team)
         st.success("Saved!")
@@ -45,26 +45,29 @@ if active_team:
 
         with col:
             with st.container(border=True):
-                char.name = st.text_input(f"Slot {i+1}", value=char.name, label_visibility="collapsed", key=f"name_{i}")
+                char.name = st.text_input(f"Slot {i+1}", value=char.name, label_visibility="collapsed", key=f"{prefix}_name")
                 st.divider()
 
-                char.dps_floor = st.number_input("DPS Floor", value=char.dps_floor, step=100, key=f"floor_{i}")
-                char.dps_ceiling = st.number_input("DPS Ceiling", value=char.dps_ceiling, step=100, key=f"ceil_{i}")
-                char.roll_value = st.number_input("Roll Value", value=char.roll_value, step=100, key=f"roll_{i}")
+                char.dps_floor = st.number_input("DPS Floor", value=char.dps_floor, step=100, key=f"{prefix}_floor")
+                char.dps_ceiling = st.number_input("DPS Ceiling", value=char.dps_ceiling, step=100, key=f"{prefix}_ceil")
+                char.roll_value = st.number_input("Roll Value", value=char.roll_value, step=100, key=f"{prefix}_roll")
 
                 st.divider()
 
                 if active_team.team_dps > 0 and char.dps_ceiling > char.dps_floor:
                     progress = char.get_progress(active_team.team_dps)
-                    difficulty = char.get_upgrade_difficulty()
-                    score = char.get_priority_score(active_team.team_dps)
+                    upgrade_difficulty_modifier = char.get_upgrade_difficulty()
+                    raw_score = char.get_raw_priority_score(active_team.team_dps)
+                    rel_score = active_team.get_relative_priority_score(char)
 
                     st.metric("Build Progress", f"{progress * 100:.1f}%")
-                    st.metric("Upgrade difficulty modifier", f"{difficulty:.3f}")
-                    st.metric("Priority Score", f"{score:.3f}")
+                    st.metric("Artifact upgrade difficulty modifier", f"{upgrade_difficulty_modifier * 100:.2f}%")
+                    st.metric("Expected DPS Return", f"{raw_score:,.0f}")
+                    st.metric("Team Focus Priority", f"{rel_score * 100:.1f}%")
                 else:
                     st.metric("Build Progress", "0.0%")
-                    st.metric("Priority Score", "0.000")
+                    st.metric("Expected DPS Return", "0")
+                    st.metric("Team Focus Priority", "0.0%")
 
     st.write("")
 
